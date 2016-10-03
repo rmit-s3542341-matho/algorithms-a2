@@ -17,10 +17,11 @@ public abstract class Game {
 		return null;
 	}
 	
-	static public void readGameConfig(String fileName) throws IOException
+	static public void readGameConfig(String fileName, HashMap<String, ArrayList<Person>> attrMap)
+			throws IOException
 	{
 		int lineNoStart = readAttributes(fileName);
-		readPersons(fileName, lineNoStart);
+		readPersons(fileName, lineNoStart, attrMap);
 	}
 	
 	static private int readAttributes(String fileName) throws IOException
@@ -54,7 +55,8 @@ public abstract class Game {
 		return lineNo;
 	}
 	
-	static private void readPersons(String fileName, int lineNoStart) throws IOException
+	static private void readPersons(String fileName, int lineNoStart, HashMap<String, ArrayList<Person>> attrMap)
+			throws IOException
 	{
         BufferedReader assignedReader = new BufferedReader(new FileReader(fileName));
         String line;
@@ -81,6 +83,12 @@ public abstract class Game {
         		else if (currentPerson != null) {
         			// Read person's attribute and value
         			currentPerson.attributes.put(fields[0], fields[1]);
+
+					// add Person to their attribute map
+					// assumes line is in the form: "hairColor black"
+					if (!attrMap.containsKey(line))
+						attrMap.put(line, new ArrayList<Person>());
+					attrMap.get(line).add(currentPerson);
         		}
         	}
         }

@@ -9,7 +9,9 @@ import java.io.*;
  */
 public class RandomGuessPlayer implements Player
 {
-
+	
+	Person chosenPerson;
+	
     /**
      * Loads the game configuration from gameFilename, and also store the chosen
      * person.
@@ -24,7 +26,9 @@ public class RandomGuessPlayer implements Player
     public RandomGuessPlayer(String gameFilename, String chosenName)
         throws IOException
     {
-
+    	Person.readGameConfig(gameFilename);
+    	
+    	chosenPerson = Person.getPerson(chosenName);
     } // end of RandomGuessPlayer()
 
 

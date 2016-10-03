@@ -4,31 +4,34 @@ import java.io.IOException;
 import java.util.*;
 	
 public class Person {
-	// All persons in the game
-	private static ArrayList<Person> persons;
+	// Maybe this should live in the RandomGuessPlayer... as it being static atm we
+	// cannot have multiple different instances of it (two players can't have unique
+	// sets of data)
+	public static ArrayList<Person> allPersons = new ArrayList<Person>();
+	public static HashMap<String, ArrayList<String>> allAttributes = new HashMap<String, ArrayList<String>>(); 
 	
-	private String name;
-
+	public String name;
+	public HashMap<String, String> attributes;
+	
 	// Constructor
 	public Person(String name) {
 		this.name = name;
-	}
-	
-	// Getters
-	public String getName() {
-		return name;
+		attributes = new HashMap<String, String>(); 
 	}
 	
 	// Methods
-	static public void readGameConfig(String fileName) 
-	{
-		try {
-			int lineNoStart = readAttributes(fileName);
-			readPersons(fileName, lineNoStart);
-			
-		} catch(IOException ioE) {
-			System.out.println(ioE.getMessage());
+	static public Person getPerson(String name) {
+		for (Person person : allPersons) {
+			if (person.name.equals(name))
+				return person;
 		}
+		return null;
+	}
+	
+	static public void readGameConfig(String fileName) throws IOException
+	{
+		int lineNoStart = readAttributes(fileName);
+		readPersons(fileName, lineNoStart);
 	}
 	
 	static private int readAttributes(String fileName) throws IOException
@@ -45,14 +48,12 @@ public class Person {
             
 		  	if (fields.length > 1) {
 		  		// Reading attribute and values
-		  		String attrName = fields[0];
-		  		ArrayList<String> tempVals = new ArrayList<String>();
+		  		final String attrName = fields[0];
+		  		allAttributes.put(attrName, new ArrayList<String>());
 		  		
 		  		for (int i = 1; i < fields.length; i++) {
-		  			tempVals.add(fields[i]);
+					allAttributes.get(attrName).add(fields[i]);
 		  		}
-		  		
-		  		System.out.println(attrName + ": " + tempVals.toString());
 		  	}
 		  	else {
 		  		// Break after transition to persons data
@@ -69,6 +70,7 @@ public class Person {
         BufferedReader assignedReader = new BufferedReader(new FileReader(fileName));
         String line;
         int lineNo = 0;
+        Person currentPerson = null;
         
         while ((line = assignedReader.readLine()) != null )
         {	
@@ -78,17 +80,21 @@ public class Person {
         	if (lineNo >= lineNoStart) {
         		String[] fields = line.split(" ");
         		
-        		// Read person name TODO not perfect as it reads in the empty lines too
-        		if (fields.length == 1) {
-        			System.out.println(fields[0]);
+        		// Skip if there's a blank line
+        		if (fields[0].isEmpty()) {
+        			continue;
         		}
-        		else {
+        		
+        		if (fields.length == 1) {
+        			currentPerson = new Person(fields[0]); 
+        			allPersons.add(currentPerson);
+        		}
+        		else if (currentPerson != null) {
         			// Read person's attribute and value
-        			System.out.println(fields[0] + ": " + fields[1]);
+        			currentPerson.attributes.put(fields[0], fields[1]);
         		}
         	}
         }
         assignedReader.close();
-    }
-
+    } 
 }

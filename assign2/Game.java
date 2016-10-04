@@ -62,7 +62,9 @@ public abstract class Game {
         String line;
         int lineNo = 0;
         Person currentPerson = null;
-        
+
+		boolean addPerson = allPersons.size() == 0;
+
         while ((line = assignedReader.readLine()) != null )
         {	
         	lineNo++;
@@ -78,7 +80,7 @@ public abstract class Game {
         		
         		if (fields.length == 1) {
         			currentPerson = new Person(fields[0]); 
-        			allPersons.add(currentPerson);
+        			if (addPerson) allPersons.add(currentPerson);
         		}
         		else if (currentPerson != null) {
         			// Read person's attribute and value

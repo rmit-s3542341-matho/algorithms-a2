@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public abstract class Game {
-	public static ArrayList<Person> allPersons = new ArrayList<Person>(); // This would be a set however Java sets do not have a .get method
-	public static HashMap<String, ArrayList<String>> allAttributes = new HashMap<String, ArrayList<String>>(); 
+	public ArrayList<Person> allPersons = new ArrayList<Person>(); // This would be a set however Java sets do not have a .get method
+	public HashMap<String, ArrayList<String>> allAttributes = new HashMap<String, ArrayList<String>>(); 
 	
 	// Methods
-	static public Person getPerson(String name) {
+	public Person getPerson(String name) {
 		for (Person person : allPersons) {
 			if (person.name.equals(name))
 				return person;
@@ -17,14 +17,14 @@ public abstract class Game {
 		return null;
 	}
 	
-	static public void readGameConfig(String fileName, HashMap<String, ArrayList<Person>> attrMap)
+	public void readGameConfig(String fileName, HashMap<String, ArrayList<Person>> attrMap)
 			throws IOException
 	{
 		int lineNoStart = readAttributes(fileName);
 		readPersons(fileName, lineNoStart, attrMap);
 	}
 	
-	static private int readAttributes(String fileName) throws IOException
+	private int readAttributes(String fileName) throws IOException
 	{
         BufferedReader assignedReader = new BufferedReader(new FileReader(fileName));
         String line;
@@ -55,7 +55,7 @@ public abstract class Game {
 		return lineNo;
 	}
 	
-	static private void readPersons(String fileName, int lineNoStart, HashMap<String, ArrayList<Person>> attrMap)
+	private void readPersons(String fileName, int lineNoStart, HashMap<String, ArrayList<Person>> attrMap)
 			throws IOException
 	{
         BufferedReader assignedReader = new BufferedReader(new FileReader(fileName));

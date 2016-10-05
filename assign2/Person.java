@@ -27,4 +27,9 @@ public class Person {
             attrMap.get(key).remove(this);
         }
     }
+
+    public boolean hasAttribute(String attrName, String attrValue)
+    {
+        return attributes.get(attrName).equals(attrValue);
+    }
 }

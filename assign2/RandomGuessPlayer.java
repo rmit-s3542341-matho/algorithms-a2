@@ -49,7 +49,7 @@ public class RandomGuessPlayer extends Game implements Player
         // I'm assuming the chosen person cannot be the
         // same for both players
         opponentPersons.remove(chosenPerson);
-    } // end of RandomGuessPlayer()
+    }
 
 
     public Guess guess()
@@ -83,54 +83,56 @@ public class RandomGuessPlayer extends Game implements Player
         		}
         		i++;
         	}
-    	} while(guess == null);
+    	} while (guess == null);
     	
     	return guess;
-    } // end of guess()
+    }
 
 
-    public boolean answer(Guess currGuess) {
-    	// Check if guessing for person
-    	if (currGuess.getType() == Guess.GuessType.Person) {
-    		return currGuess.getValue().equals(chosenPerson.name);
-    	}
-    	else {
-    		// Guessing for attribute
-    		return chosenPerson.attributes.get(currGuess.getAttribute()) != null ? true : false;
-    	}
-    } // end of answer()
-
-
-	public boolean receiveAnswer(Guess currGuess, boolean answer)
+    public boolean answer(Guess currGuess)
     {
-		// Check if guess was of opponents person and was correct
-		if (currGuess.getType() == Guess.GuessType.Person && answer) {
-	        return true;
-		}
-		
-	    String key = currGuess.getAttribute() + " " + currGuess.getValue();
+    	if (currGuess.getType() == Guess.GuessType.Person)
+            // Check if guessing for person
+    		return currGuess.getValue().equals(chosenPerson.name);
+    	else
+    		// Guessing for attribute
+    		return chosenPerson.hasAttribute(currGuess.getAttribute(), currGuess.getValue());
+    }
+
+
+    public boolean receiveAnswer(Guess currGuess, boolean answer)
+    {
+        if (currGuess.getType() == Guess.GuessType.Person && answer)
+            return true;
+
+        String key = currGuess.getAttribute() + " " + currGuess.getValue();
 
         ArrayList<Person> matchingPersons = attrValToPersonsMap.get(key);
+        ArrayList<Person> personsToRemove = new ArrayList<>();
 
+        // if answer is true (guess was correct), then we should remove
+        // all Persons that don't have the attribute
+        // otherwise remove all Persons that do have the attribute
         if (answer) {
             // remove everybody that doesn't match
             for (Person person : opponentPersons) {
                 // not sure of the speed of this \/
-                if (matchingPersons.contains(person))
-                    // UNTESTED
-                    // will probably throw concurrent modification error
-                    opponentPersons.remove(person);
+                if (!matchingPersons.contains(person))
+                    personsToRemove.add(person);
             }
         }
-        else {
-            // remove everybody that matches
+        else
+            // remove everybody that does match
+            personsToRemove = matchingPersons;
 
-            for (Person person : matchingPersons)
-                opponentPersons.remove(person);
+        for (Person person : personsToRemove)
+            opponentPersons.remove(person);
 
-        }
+        // remove the attr from the pool of guessable ones since
+        // it has been used
+        // attrValToPersonsMap.remove(key);
 
         return false;
-    } // end of receiveAnswer()
+    }
 
-} // end of class RandomGuessPlayer
+}

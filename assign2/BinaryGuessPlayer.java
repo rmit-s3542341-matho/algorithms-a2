@@ -42,10 +42,6 @@ public class BinaryGuessPlayer extends Game implements Player
         // copy the list of all persons so that this
         // player can change it
         opponentPersons = new ArrayList<>(allPersons);
-
-        // I'm assuming the chosen person cannot be the
-        // same for both players
-        opponentPersons.remove(chosenPerson);
     } // end of BinaryGuessPlayer()
 
 
@@ -59,7 +55,12 @@ public class BinaryGuessPlayer extends Game implements Player
         double distance = 0;
         double bestDistance = opponentPersons.size();
         
-        String attrToGuess = ""; // never used in this state
+        String attrToGuess = ""; // never used in this state, this could cause an issue 
+        /* Logically this may be incorrect. This grabs the attribute-value pair that
+         * has the highest number of persons attached. This may not be only grabbing
+         * the attribute-value pairs from the opponentPersons rather just grabbing
+         * from the overall pool of attrVal persons which may include irrelevant persons 
+         */
         for (String attrVal : attrMap.keySet()) {        	
         	distance = distanceBetween(half, attrMap.get(attrVal).size());
         	if (distance == 0) {

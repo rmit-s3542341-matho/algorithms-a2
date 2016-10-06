@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -16,7 +17,7 @@ public class RandomGuessPlayer extends Game implements Player
 
     // list of possible Persons that may be chosen for the other player
     private ArrayList<Person> opponentPersons;
-    private ArrayList<String> guessedAttributes;
+    private ArrayList<String> guessedAttrValPairs;
 
     // map of string tuple to list of Persons that contain that attribute
     // i.e. "hairColor black" ~> P1, P2, P3
@@ -44,11 +45,7 @@ public class RandomGuessPlayer extends Game implements Player
         // copy the list of all persons so that this
         // player can change it
         opponentPersons = new ArrayList<>(allPersons);
-        guessedAttributes = new ArrayList<String>();
-
-        // I'm assuming the chosen person cannot be the
-        // same for both players
-        opponentPersons.remove(chosenPerson);
+        guessedAttrValPairs = new ArrayList<String>();
     }
 
 
@@ -58,9 +55,10 @@ public class RandomGuessPlayer extends Game implements Player
             return new Guess(Guess.GuessType.Person, "", opponentPersons.get(0).name);
         }
         
-    	// Randomly select a person from opponentPersons. Randomly select an attribute 
-    	// of that person. Removing of all persons who do/don't have the attribute is
-    	// handled in recieveAnswer. Store the attribute that has been guessed.
+    	/* Randomly select a person from opponentPersons. Randomly select an attribute-
+    	 * value pair of that person. Removing of all persons who do/don't have the 
+    	 * attribute-value pair is handled in recieveAnswer. Store the attribute-value
+    	 * pair that has been guessed. */
     	
     	Random rand = new Random();
     	Guess guess = null;
@@ -72,17 +70,22 @@ public class RandomGuessPlayer extends Game implements Player
     	// Could be an infinite loop however it shouldn't
     	do {
         	// Grab a random attribute from the person
-        	int i = 0, randAttributeIndex = rand.nextInt(guessPerson.attributes.size());
+        	int randAttributeIndex = rand.nextInt(guessPerson.attributes.size());
+        	int i = 0;
         	
-        	for (String attribute : guessPerson.attributes.keySet()) {
-        		
-        		// Iterate to random index and check if attribute has been guessed 
-        		if (i == randAttributeIndex && !guessedAttributes.contains(attribute)) {
-        			guess = new Guess(Guess.GuessType.Attribute, attribute, guessPerson.attributes.get(attribute));
-        			guessedAttributes.add(attribute);
+        	for (Map.Entry<String, String> entry : guessPerson.attributes.entrySet()) {
+        		String attr = entry.getKey();
+        		String value = entry.getValue();        		
+        	    String attrValPair = attr + value;
+        	    
+        	    // Iterate to random index and check if attribute-value pair has been guessed 
+        		if (i == randAttributeIndex && !guessedAttrValPairs.contains(attrValPair)) {
+        			guess = new Guess(Guess.GuessType.Attribute, attr, value);
+        			guessedAttrValPairs.add(attrValPair);
         		}
         		i++;
         	}
+
     	} while (guess == null);
     	
     	return guess;

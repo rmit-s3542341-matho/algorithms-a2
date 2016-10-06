@@ -56,11 +56,6 @@ public class BinaryGuessPlayer extends Game implements Player
         double bestDistance = opponentPersons.size();
         
         String attrToGuess = ""; // never used in this state, this could cause an issue 
-        /* Logically this may be incorrect. This grabs the attribute-value pair that
-         * has the highest number of persons attached. This may not be only grabbing
-         * the attribute-value pairs from the opponentPersons rather just grabbing
-         * from the overall pool of attrVal persons which may include irrelevant persons 
-         */
         for (String attrVal : attrMap.keySet()) {        	
         	distance = distanceBetween(half, attrMap.get(attrVal).size());
         	if (distance == 0) {
@@ -125,7 +120,11 @@ public class BinaryGuessPlayer extends Game implements Player
 
         for (Person person : personsToRemove)
             opponentPersons.remove(person);
-
+        for (ArrayList<Person> persons : attrMap.values()) {
+        	// Prevents trying to delete from nulls (wouldn't throw an error anyway)
+        	if (!persons.isEmpty()) persons.removeAll(personsToRemove);
+        }
+        
         // remove the attr from the pool of guessable ones since
         // it has been used
         attrMap.remove(key);

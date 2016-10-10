@@ -42,7 +42,7 @@ public class BinaryGuessPlayer extends Game implements Player
         // copy the list of all persons so that this
         // player can change it
         opponentPersons = new ArrayList<>(allPersons);
-    } // end of BinaryGuessPlayer()
+    }
 
 
     public Guess guess() {
@@ -74,7 +74,7 @@ public class BinaryGuessPlayer extends Game implements Player
         // split and return guess
         String[] attr = attrToGuess.split(" ");
         return new Guess(Guess.GuessType.Attribute, attr[0], attr[1]);
-    } // end of guess()
+    }
 
     public static double distanceBetween(double base, double toCheck) {
     	double answer;    	
@@ -91,7 +91,7 @@ public class BinaryGuessPlayer extends Game implements Player
             return chosenPerson.name.equals(currGuess.getValue());
         else
             return chosenPerson.hasAttribute(currGuess.getAttribute(), currGuess.getValue());
-    } // end of answer()
+    }
 
 
 	public boolean receiveAnswer(Guess currGuess, boolean answer) {
@@ -130,6 +130,6 @@ public class BinaryGuessPlayer extends Game implements Player
         attrMap.remove(key);
 
         return false;
-    } // end of receiveAnswer()
+    }
 
-} // end of class BinaryGuessPlayer
+}

@@ -118,9 +118,12 @@ public class BinaryGuessPlayer extends Game implements Player
             // remove everybody that does match
             personsToRemove = matchingPersons;
 
-        for (Person person : personsToRemove)
-            opponentPersons.remove(person);
-        for (ArrayList<Person> persons : attrMap.values()) {
+        // remove all from potential persons
+        opponentPersons.removeAll(personsToRemove);
+
+        for (String currKey : attrMap.keySet()) {
+            if (currKey.equals(key)) continue;
+            ArrayList<Person> persons = attrMap.get(key);
         	// Prevents trying to delete from nulls (wouldn't throw an error anyway)
         	if (!persons.isEmpty()) persons.removeAll(personsToRemove);
         }

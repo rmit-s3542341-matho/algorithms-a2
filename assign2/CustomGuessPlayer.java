@@ -42,7 +42,15 @@ public class CustomGuessPlayer extends Game implements Player
         // copy the list of all persons so that this
         // player can change it
         opponentPersons = new ArrayList<>(allPersons);
+        opponentPersons.remove(chosenPerson);
 
+        // this line is needed for other configs to narrow down search
+        // if used on the default config this actually increases the rounds
+        // from 2 to 3 because skewing the attrMap with the chosenPerson's attrs
+        // actually means it removes 6 out of 9 Persons, meaning it can guess
+        // a Person on the second round
+
+        // chosenPerson.removeFromMap(attrMap);
     }
 
 
@@ -53,7 +61,7 @@ public class CustomGuessPlayer extends Game implements Player
             return new Guess(Guess.GuessType.Person, "", opponentPersons.get(0).name);
         }
 
-        /**
+        /*
          * Extra strategies courtesy of https://boardgamegeek.com/thread/302791/advanced-strategies
          *
          * Person isn't going to be yours - do not immediately guess any attributes that this Player's
@@ -66,9 +74,71 @@ public class CustomGuessPlayer extends Game implements Player
          *
          */
 
-        return new Guess(Guess.GuessType.Person, "", "Placeholder");
+        double half = (double) opponentPersons.size() / 2;
+        double distance = 0;
+        double bestDistance = opponentPersons.size();
+
+        String attrToGuess = ""; // never used in this state, this could cause an issue
+        for (String attrVal : attrMap.keySet()) {
+            distance = distanceBetween(half, attrMap.get(attrVal).size());
+            if (distance == 0) {
+                // Exactly half
+                bestDistance = distance;
+                attrToGuess = attrVal;
+                break;
+            }
+            else if (distance < bestDistance) {
+                bestDistance = distance;
+                attrToGuess = attrVal;
+            }
+        }
+
+        // attr key not removed here, as it is needed in receiveAnswer
+
+        System.out.println("CUSTOM: Closest is " + (int) (half - bestDistance) + "/" + opponentPersons.size());
+
+        /*
+         * Idea:
+         *
+         * At some point, the closest is something like 1/2 or 1/3
+         * This means that it will ask for an attribute that can match only one, or two Persons
+         * Best case scenario here: The guess is correct, meaning one Person is left, and then we
+         * guess for that Person next round.
+         *
+         * I think at this point it should just guess the Person. If it is wrong, it can still remove the Person
+         * i.e. 1/3 => 2, then try the same strategy next round (which should work).
+         *
+         * If it is right, it saves narrowing it down to one Person, effectively removing an entire round.
+         *
+         * To incorporate this we have to check for a Person guess in receiveAnswer
+         *
+         */
+
+        if (opponentPersons.size() <= 3) {
+            // guess a Person now
+            // best case: correct and finish (save 2 whole rounds)
+            // worst case: (size == 3) only one Person is removed (same result as if guessing attr)
+            // worse case: (size == 2) one Person is removed, guess Person next round (save 1 round)
+
+            // assuming attrToGuess is always SHORT of half (i.e. 1/3 instead of 2/3)
+            Person personToGuess = attrMap.get(attrToGuess).get(0);
+
+            return new Guess(Guess.GuessType.Person, "", personToGuess.name);
+        }
+
+        // split and return guess
+        String[] attr = attrToGuess.split(" ");
+        return new Guess(Guess.GuessType.Attribute, attr[0], attr[1]);
     }
 
+    public static double distanceBetween(double base, double toCheck) {
+        double answer;
+        if (base > toCheck)
+            answer = base - toCheck;
+        else
+            answer = toCheck - base;
+        return answer;
+    }
 
     public boolean answer(Guess currGuess)
     {
@@ -81,8 +151,17 @@ public class CustomGuessPlayer extends Game implements Player
 
 	public boolean receiveAnswer(Guess currGuess, boolean answer)
     {
-        if (currGuess.getType() == Guess.GuessType.Person && answer)
-            return true;
+        if (currGuess.getType() == Guess.GuessType.Person) {
+            if (answer) return true;
+            else {
+                for (Person person : opponentPersons) {
+                    if (person.name.equals(currGuess.getValue())) {
+                        opponentPersons.remove(person);
+                        return false;
+                    }
+                }
+            }
+        }
 
         String key = currGuess.getAttribute() + " " + currGuess.getValue();
 
@@ -104,8 +183,11 @@ public class CustomGuessPlayer extends Game implements Player
             // remove everybody that does match
             personsToRemove = matchingPersons;
 
-        for (Person person : personsToRemove)
-            opponentPersons.remove(person);
+        // remove all from potential persons
+        opponentPersons.removeAll(personsToRemove);
+
+        System.out.println("CUSTOM: Eliminated " + personsToRemove.size());
+
         for (ArrayList<Person> persons : attrMap.values()) {
             // Prevents trying to delete from nulls (wouldn't throw an error anyway)
             if (!persons.isEmpty()) persons.removeAll(personsToRemove);

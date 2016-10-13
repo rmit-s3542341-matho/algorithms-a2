@@ -60,6 +60,7 @@ public class BinaryGuessPlayer extends Game implements Player
         	distance = distanceBetween(half, attrMap.get(attrVal).size());
         	if (distance == 0) {
         		// Exactly half
+                bestDistance = distance;
         		attrToGuess = attrVal;
         		break;
         	}
@@ -70,7 +71,9 @@ public class BinaryGuessPlayer extends Game implements Player
         }
         
         // attr key not removed here, as it is needed in receiveAnswer
-    	
+
+        System.out.println("BINARY: Closest is " + (int) (half - bestDistance) + "/" + opponentPersons.size());
+
         // split and return guess
         String[] attr = attrToGuess.split(" ");
         return new Guess(Guess.GuessType.Attribute, attr[0], attr[1]);
@@ -121,11 +124,13 @@ public class BinaryGuessPlayer extends Game implements Player
         // remove all from potential persons
         opponentPersons.removeAll(personsToRemove);
 
+        System.out.println("BINARY: Eliminated " + personsToRemove.size());
+
         for (String currKey : attrMap.keySet()) {
             if (currKey.equals(key)) continue;
             ArrayList<Person> persons = attrMap.get(key);
-        	// Prevents trying to delete from nulls (wouldn't throw an error anyway)
-        	if (!persons.isEmpty()) persons.removeAll(personsToRemove);
+            // Prevents trying to delete from nulls (wouldn't throw an error anyway)
+            if (!persons.isEmpty()) persons.removeAll(personsToRemove);
         }
         
         // remove the attr from the pool of guessable ones since

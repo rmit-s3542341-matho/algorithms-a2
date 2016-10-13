@@ -24,7 +24,7 @@ public class Person {
         for (Map.Entry entry : attributes.entrySet())
         {
             String key = entry.getKey() + " " + entry.getValue();
-            attrMap.get(key).remove(this);
+            if (attrMap.containsKey(key)) attrMap.get(key).remove(this);
         }
     }
 

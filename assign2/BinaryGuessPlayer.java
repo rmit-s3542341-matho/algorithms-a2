@@ -126,16 +126,15 @@ public class BinaryGuessPlayer extends Game implements Player
 
         System.out.println("BINARY: Eliminated " + personsToRemove.size());
 
-        for (String currKey : attrMap.keySet()) {
-            if (currKey.equals(key)) continue;
-            ArrayList<Person> persons = attrMap.get(key);
-            // Prevents trying to delete from nulls (wouldn't throw an error anyway)
-            if (!persons.isEmpty()) persons.removeAll(personsToRemove);
-        }
-        
         // remove the attr from the pool of guessable ones since
         // it has been used
         attrMap.remove(key);
+
+        for (String currKey : attrMap.keySet()) {
+            ArrayList<Person> persons = attrMap.get(currKey);
+            // Prevents trying to delete from nulls (wouldn't throw an error anyway)
+            if (!persons.isEmpty()) persons.removeAll(personsToRemove);
+        }
 
         return false;
     }

@@ -157,9 +157,11 @@ public class CustomGuessPlayer extends Game implements Player
                 for (Person person : opponentPersons) {
                     if (person.name.equals(currGuess.getValue())) {
                         opponentPersons.remove(person);
+                        person.removeFromMap(attrMap);
                         return false;
                     }
                 }
+                System.out.println("Player not found");
             }
         }
 
@@ -188,14 +190,15 @@ public class CustomGuessPlayer extends Game implements Player
 
         System.out.println("CUSTOM: Eliminated " + personsToRemove.size());
 
-        for (ArrayList<Person> persons : attrMap.values()) {
-            // Prevents trying to delete from nulls (wouldn't throw an error anyway)
-            if (!persons.isEmpty()) persons.removeAll(personsToRemove);
-        }
-
         // remove the attr from the pool of guessable ones since
         // it has been used
         attrMap.remove(key);
+
+        for (String currKey : attrMap.keySet()) {
+            ArrayList<Person> persons = attrMap.get(currKey);
+            // Prevents trying to delete from nulls (wouldn't throw an error anyway)
+            if (!persons.isEmpty()) persons.removeAll(personsToRemove);
+        }
 
         return false;
     }

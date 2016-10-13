@@ -42,15 +42,6 @@ public class CustomGuessPlayer extends Game implements Player
         // copy the list of all persons so that this
         // player can change it
         opponentPersons = new ArrayList<>(allPersons);
-        opponentPersons.remove(chosenPerson);
-
-        // this line is needed for other configs to narrow down search
-        // if used on the default config this actually increases the rounds
-        // from 2 to 3 because skewing the attrMap with the chosenPerson's attrs
-        // actually means it removes 6 out of 9 Persons, meaning it can guess
-        // a Person on the second round
-
-        // chosenPerson.removeFromMap(attrMap);
     }
 
 

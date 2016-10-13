@@ -35,4 +35,4 @@ with open("game%d.config" % game_no, "w") as outfile:
 	outfile.write(out)
 
 with open("game%d.chosen" % game_no, "w") as outfile:
-	outfile.write("P%s P%s\n" % (randint(1, num_persons // 2), randint(num_persons // 2, num_persons)))
+	outfile.write("P%s P%s\n" % (randint(1, num_persons), randint(1, num_persons)))

@@ -1,6 +1,5 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Binary-search based guessing player.
@@ -11,11 +10,6 @@ import java.util.HashMap;
  */
 public class BinaryGuessPlayer extends Game
 {
-	private Person chosenPerson;
-    private ArrayList<Person> opponentPersons;
-    // Collection of persons who have attribute-value pair
-    // i.e. "hairColor black" ~> P1, P2, P3
-    private HashMap<String, ArrayList<Person>> attrValToPersonsMap;
 	
     /**
      * Loads the game configuration from gameFilename, and also store the chosen
@@ -31,12 +25,7 @@ public class BinaryGuessPlayer extends Game
     public BinaryGuessPlayer(String gameFilename, String chosenName)
         throws IOException
     {
-    	attrValToPersonsMap = new HashMap<>();
-        
-    	readGameConfig(gameFilename, attrValToPersonsMap);
-    	chosenPerson = getPerson(chosenName);
-        // Make a mutable copy of all persons
-        opponentPersons = new ArrayList<Person>(allPersons);
+    	super(gameFilename, chosenName);
     }
 
 
@@ -45,9 +34,11 @@ public class BinaryGuessPlayer extends Game
             return new Guess(Guess.GuessType.Person, "", opponentPersons.get(0).name);
         }
 
-    	/* 1. Get half number of possible persons
+    	/* 
+    	 * 1. Get half number of possible persons
     	 * 2. Iterate over all possible attribute-value pairs
-    	 * 3. Determine attribute-value pair that is closest to half (1.) */
+    	 * 3. Determine attribute-value pair that is closest to half (1.) 
+    	 */
     	
         double half = (double) opponentPersons.size() / 2;
         double distance = 0;

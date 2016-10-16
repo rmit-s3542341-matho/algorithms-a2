@@ -1,6 +1,5 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -13,12 +12,7 @@ import java.util.Random;
  */
 public class RandomGuessPlayer extends Game
 {
-	private Person chosenPerson;
-    private ArrayList<Person> opponentPersons;
     private ArrayList<String> guessedAttrValPairs;
-    // Collection of persons who have attribute-value pair
-    // i.e. "hairColor black" ~> P1, P2, P3
-    private HashMap<String, ArrayList<Person>> attrValToPersonsMap;
 	
     /**
      * Loads the game configuration from gameFilename, and also store the chosen
@@ -34,13 +28,8 @@ public class RandomGuessPlayer extends Game
     public RandomGuessPlayer(String gameFilename, String chosenName)
         throws IOException
     {
-        attrValToPersonsMap = new HashMap<>();
+    	super(gameFilename, chosenName);
         guessedAttrValPairs = new ArrayList<String>();
-        
-    	readGameConfig(gameFilename, attrValToPersonsMap);
-    	chosenPerson = getPerson(chosenName);
-        // Make a mutable copy of all persons
-        opponentPersons = new ArrayList<Person>(allPersons);
     }
 
 
@@ -50,9 +39,11 @@ public class RandomGuessPlayer extends Game
             return new Guess(Guess.GuessType.Person, "", opponentPersons.get(0).name);
         }
         
-    	/* 1. Randomly select a person from opponentPersonss
+    	/* 
+    	 * 1. Randomly select a person from opponentPersonss
     	 * 2. Randomly select an attribute-value pair of that person
-    	 * 3. Store the attribute-value pair that has been guessed */
+    	 * 3. Store the attribute-value pair that has been guessed 
+    	 */
     	
     	Random rand = new Random();
     	Guess guess = null;

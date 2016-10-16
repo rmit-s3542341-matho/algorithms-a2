@@ -7,8 +7,38 @@ import java.util.HashMap;
 public abstract class Game  implements Player 
 {
 	protected ArrayList<Person> allPersons = new ArrayList<Person>(); // This would be a set however Java sets do not have a .get method
-	private HashMap<String, ArrayList<String>> allAttributes = new HashMap<String, ArrayList<String>>(); 
+	private HashMap<String, ArrayList<String>> allAttributes = new HashMap<String, ArrayList<String>>();
 	
+	protected Person chosenPerson;
+	protected ArrayList<Person> opponentPersons;
+    // Collection of persons who have attribute-value pair
+    // i.e. "hairColor black" ~> P1, P2, P3
+	protected HashMap<String, ArrayList<Person>> attrValToPersonsMap;
+	
+	/**
+     * Loads the game configuration from gameFilename, and also store the chosen
+     * person.
+     *
+     * @param gameFilename Filename of game configuration.
+     * @param chosenName Name of the chosen person for this player.
+     * @throws IOException If there are IO issues with loading of gameFilename.
+     *    Note you can handle IOException within the constructor and remove
+     *    the "throws IOException" method specification, but make sure your
+     *    implementation exits gracefully if an IOException is thrown.
+     */
+    public Game(String gameFilename, String chosenName)
+            throws IOException
+    {
+    	attrValToPersonsMap = new HashMap<String, ArrayList<Person>>();
+        
+    	readGameConfig(gameFilename, attrValToPersonsMap);
+    	chosenPerson = getPerson(chosenName);
+        // Make a mutable copy of all persons
+        opponentPersons = new ArrayList<Person>(allPersons);
+    }
+    
+    
+    // Helpers
 	public Person getPerson(String name) {
 		for (Person person : allPersons) {
 			if (person.name.equals(name))
@@ -26,6 +56,7 @@ public abstract class Game  implements Player
     	return answer;
     }
 	
+    // File reading
 	public void readGameConfig(String fileName, HashMap<String, ArrayList<Person>> attrValToPersonsMap)
 			throws IOException
 	{

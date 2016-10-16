@@ -73,17 +73,7 @@ public class BinaryGuessPlayer extends Game
         // Split attribute-value string
         String[] attrValue = attrValueToGuess.split(" ");
         return new Guess(Guess.GuessType.Attribute, attrValue[0], attrValue[1]);
-    }
-
-    private static double distanceBetween(double base, double toCheck) {
-    	double answer;    	
-    	if (base > toCheck) 
-    		answer = base - toCheck;
-    	else 
-    		answer = toCheck - base;
-    	return answer;
-    }
-    
+    }  
     
 	public boolean answer(Guess currGuess) {
 		if (currGuess.getType() == Guess.GuessType.Person)

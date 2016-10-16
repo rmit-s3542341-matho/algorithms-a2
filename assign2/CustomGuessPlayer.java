@@ -9,16 +9,13 @@ import java.util.HashMap;
  * You may implement/extend other interfaces or classes, but ensure ultimately
  * that this class implements the Player interface (directly or indirectly).
  */
-public class CustomGuessPlayer extends Game implements Player
+public class CustomGuessPlayer extends Game
 {
-    private Person chosenPerson;
-
-    // list of possible Persons that may be chosen for the other player
+	private Person chosenPerson;
     private ArrayList<Person> opponentPersons;
-
-    // map of string tuple to list of Persons that contain that attribute
+    // Collection of persons who have attribute-value pair
     // i.e. "hairColor black" ~> P1, P2, P3
-    private HashMap<String, ArrayList<Person>> attrMap;
+    private HashMap<String, ArrayList<Person>> attrValToPersonsMap;
 
     /**
      * Loads the game configuration from gameFilename, and also store the chosen
@@ -34,59 +31,45 @@ public class CustomGuessPlayer extends Game implements Player
     public CustomGuessPlayer(String gameFilename, String chosenName)
         throws IOException
     {
-        attrMap = new HashMap<>();
-        readGameConfig(gameFilename, attrMap);
-
-        chosenPerson = getPerson(chosenName);
-
-        // copy the list of all persons so that this
-        // player can change it
-        opponentPersons = new ArrayList<>(allPersons);
+    	attrValToPersonsMap = new HashMap<>();
+        
+    	readGameConfig(gameFilename, attrValToPersonsMap);
+    	chosenPerson = getPerson(chosenName);
+        // Make a mutable copy of all persons
+        opponentPersons = new ArrayList<Person>(allPersons);
     }
 
 
     public Guess guess()
     {
         if (opponentPersons.size() == 1) {
-            // only one person left, so it must be the correct one
             return new Guess(Guess.GuessType.Person, "", opponentPersons.get(0).name);
         }
 
-        /*
-         * Extra strategies courtesy of https://boardgamegeek.com/thread/302791/advanced-strategies
-         *
-         * Person isn't going to be yours - do not immediately guess any attributes that this Player's
-         * chosenPerson has (these attributes are less likely assuming even distribution)
-         *
-         * Have a last chance guess when the opponent only has one person left
-         * Perhaps this means this Player should keep track of what the other Player has (can update inside answer())
-         *
-         * Cannot ask generic questions due to the implementation of guessing ("does your person have a beard?", etc)
-         *
-         */
+        /* 1. Get half number of possible persons
+    	 * 2. Iterate over all possible attribute-value pairs
+    	 * 3. Determine attribute-value pair that is closest to half (1.) */
 
         double half = (double) opponentPersons.size() / 2;
         double distance = 0;
         double bestDistance = opponentPersons.size();
+        String attrValueToGuess = "";
 
-        String attrToGuess = ""; // never used in this state, this could cause an issue
-        for (String attrVal : attrMap.keySet()) {
-            distance = distanceBetween(half, attrMap.get(attrVal).size());
-            if (distance == 0) {
-                // Exactly half
+        // Iterate over attribute-values remaining
+        for (String attrVal : attrValToPersonsMap.keySet()) {
+        	// Find the attribute-value that has closest to half no. of persons
+        	distance = distanceBetween(half, attrValToPersonsMap.get(attrVal).size());
+        	if (distance == 0) {
+        		// Exactly half
                 bestDistance = distance;
-                attrToGuess = attrVal;
-                break;
-            }
-            else if (distance < bestDistance) {
-                bestDistance = distance;
-                attrToGuess = attrVal;
-            }
+        		attrValueToGuess = attrVal;
+        		break;
+        	}
+        	else if (distance < bestDistance) {
+        		bestDistance = distance;
+        		attrValueToGuess = attrVal;
+        	}
         }
-
-        // attr key not removed here, as it is needed in receiveAnswer
-
-        System.out.println("CUSTOM: Closest is " + (int) (half - bestDistance) + "/" + opponentPersons.size());
 
         /*
          * Idea:
@@ -111,32 +94,25 @@ public class CustomGuessPlayer extends Game implements Player
             // worst case: (size == 3) only one Person is removed (same result as if guessing attr)
             // worse case: (size == 2) one Person is removed, guess Person next round (save 1 round)
 
-            // assuming attrToGuess is always SHORT of half (i.e. 1/3 instead of 2/3)
-            Person personToGuess = attrMap.get(attrToGuess).get(0);
+            // assuming attrValueToGuess is always SHORT of half (i.e. 1/3 instead of 2/3)
+            Person personToGuess = attrValToPersonsMap.get(attrValueToGuess).get(0);
 
             return new Guess(Guess.GuessType.Person, "", personToGuess.name);
         }
 
-        // split and return guess
-        String[] attr = attrToGuess.split(" ");
-        return new Guess(Guess.GuessType.Attribute, attr[0], attr[1]);
-    }
-
-    public static double distanceBetween(double base, double toCheck) {
-        double answer;
-        if (base > toCheck)
-            answer = base - toCheck;
-        else
-            answer = toCheck - base;
-        return answer;
+        // Split attribute-value string
+        String[] attrValue = attrValueToGuess.split(" ");
+        return new Guess(Guess.GuessType.Attribute, attrValue[0], attrValue[1]);
     }
 
     public boolean answer(Guess currGuess)
     {
-        if (currGuess.getType() == Guess.GuessType.Person)
-            return chosenPerson.name.equals(currGuess.getValue());
-        else
-            return chosenPerson.hasAttribute(currGuess.getAttribute(), currGuess.getValue());
+    	if (currGuess.getType() == Guess.GuessType.Person)
+            // Check if guessing for person
+    		return currGuess.getValue().equals(chosenPerson.name);
+    	else
+    		// Guessing for attribute
+    		return chosenPerson.hasAttribute(currGuess.getAttribute(), currGuess.getValue());
     }
 
 
@@ -148,7 +124,7 @@ public class CustomGuessPlayer extends Game implements Player
                 for (Person person : opponentPersons) {
                     if (person.name.equals(currGuess.getValue())) {
                         opponentPersons.remove(person);
-                        person.removeFromMap(attrMap);
+                        person.removeFromMap(attrValToPersonsMap);
                         return false;
                     }
                 }
@@ -156,39 +132,27 @@ public class CustomGuessPlayer extends Game implements Player
             }
         }
 
-        String key = currGuess.getAttribute() + " " + currGuess.getValue();
+        String attrVal = currGuess.getAttribute() + " " + currGuess.getValue();
+        ArrayList<Person> matchingPersons = attrValToPersonsMap.get(attrVal);
+        ArrayList<Person> personsToRemove = new ArrayList<Person>(opponentPersons);
 
-        ArrayList<Person> matchingPersons = attrMap.get(key);
-        ArrayList<Person> personsToRemove = new ArrayList<>();
-
-        // if answer is true (guess was correct), then we should remove
-        // all Persons that don't have the attribute
-        // otherwise remove all Persons that do have the attribute
         if (answer) {
-            // remove everybody that doesn't match
-            for (Person person : opponentPersons) {
-                // not sure of the speed of this \/
-                if (!matchingPersons.contains(person))
-                    personsToRemove.add(person);
-            }
+        	// Set to remove all persons that don't have attribute-value
+        	personsToRemove.removeAll(matchingPersons);
         }
-        else
-            // remove everybody that does match
-            personsToRemove = matchingPersons;
-
-        // remove all from potential persons
+        else {
+        	// Set to remove all persons that have attribute-value
+            personsToRemove.retainAll(matchingPersons);
+        }
         opponentPersons.removeAll(personsToRemove);
 
-        System.out.println("CUSTOM: Eliminated " + personsToRemove.size());
+        // Remove the attribute from the pool of guessable ones
+        attrValToPersonsMap.remove(attrVal);
 
-        // remove the attr from the pool of guessable ones since
-        // it has been used
-        attrMap.remove(key);
-
-        for (String currKey : attrMap.keySet()) {
-            ArrayList<Person> persons = attrMap.get(currKey);
-            // Prevents trying to delete from nulls (wouldn't throw an error anyway)
-            if (!persons.isEmpty()) persons.removeAll(personsToRemove);
+        // Remove required persons from attribute-value pairs (attrValToPersonsMap)
+        for (String currAttrVal : attrValToPersonsMap.keySet()) {
+            ArrayList<Person> persons = attrValToPersonsMap.get(currAttrVal);
+            persons.removeAll(personsToRemove);
         }
 
         return false;

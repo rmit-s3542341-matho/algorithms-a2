@@ -17,6 +17,15 @@ public abstract class Game  implements Player
 		return null;
 	}
 	
+    protected static double distanceBetween(double base, double toCheck) {
+    	double answer;    	
+    	if (base > toCheck) 
+    		answer = base - toCheck;
+    	else 
+    		answer = toCheck - base;
+    	return answer;
+    }
+	
 	public void readGameConfig(String fileName, HashMap<String, ArrayList<Person>> attrValToPersonsMap)
 			throws IOException
 	{

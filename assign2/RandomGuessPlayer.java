@@ -1,6 +1,5 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -11,17 +10,9 @@ import java.util.Random;
  * You may implement/extend other interfaces or classes, but ensure ultimately
  * that this class implements the Player interface (directly or indirectly).
  */
-public class RandomGuessPlayer extends Game implements Player
+public class RandomGuessPlayer extends Game
 {
-	private Person chosenPerson;
-
-    // list of possible Persons that may be chosen for the other player
-    private ArrayList<Person> opponentPersons;
     private ArrayList<String> guessedAttrValPairs;
-
-    // map of string tuple to list of Persons that contain that attribute
-    // i.e. "hairColor black" ~> P1, P2, P3
-    private HashMap<String, ArrayList<Person>> attrValToPersonsMap;
 	
     /**
      * Loads the game configuration from gameFilename, and also store the chosen
@@ -37,14 +28,7 @@ public class RandomGuessPlayer extends Game implements Player
     public RandomGuessPlayer(String gameFilename, String chosenName)
         throws IOException
     {
-        attrValToPersonsMap = new HashMap<>();
-    	readGameConfig(gameFilename, attrValToPersonsMap);
-    	
-    	chosenPerson = getPerson(chosenName);
-
-        // copy the list of all persons so that this
-        // player can change it
-        opponentPersons = new ArrayList<>(allPersons);
+    	super(gameFilename, chosenName);
         guessedAttrValPairs = new ArrayList<String>();
     }
 
@@ -55,10 +39,11 @@ public class RandomGuessPlayer extends Game implements Player
             return new Guess(Guess.GuessType.Person, "", opponentPersons.get(0).name);
         }
         
-    	/* Randomly select a person from opponentPersons. Randomly select an attribute-
-    	 * value pair of that person. Removing of all persons who do/don't have the 
-    	 * attribute-value pair is handled in recieveAnswer. Store the attribute-value
-    	 * pair that has been guessed. */
+    	/* 
+    	 * 1. Randomly select a person from opponentPersonss
+    	 * 2. Randomly select an attribute-value pair of that person
+    	 * 3. Store the attribute-value pair that has been guessed 
+    	 */
     	
     	Random rand = new Random();
     	Guess guess = null;
@@ -67,12 +52,13 @@ public class RandomGuessPlayer extends Game implements Player
     	int randPersonIndex = rand.nextInt(opponentPersons.size());
     	Person guessPerson = opponentPersons.get(randPersonIndex);
     	
-    	// Could be an infinite loop however it shouldn't
+    	// Loop until an attribute-value pair is found that hasn't been guessed
     	do {
         	// Grab a random attribute from the person
         	int randAttributeIndex = rand.nextInt(guessPerson.attributes.size());
         	int i = 0;
         	
+        	// Iterate over all of the person's attributes
         	for (Map.Entry<String, String> entry : guessPerson.attributes.entrySet()) {
         		String attr = entry.getKey();
         		String value = entry.getValue();        		
@@ -108,32 +94,17 @@ public class RandomGuessPlayer extends Game implements Player
         if (currGuess.getType() == Guess.GuessType.Person && answer)
             return true;
 
-        String key = currGuess.getAttribute() + " " + currGuess.getValue();
+        String attrVal = currGuess.getAttribute() + " " + currGuess.getValue();
+        ArrayList<Person> matchingPersons = attrValToPersonsMap.get(attrVal);
 
-        ArrayList<Person> matchingPersons = attrValToPersonsMap.get(key);
-        ArrayList<Person> personsToRemove = new ArrayList<>();
-
-        // if answer is true (guess was correct), then we should remove
-        // all Persons that don't have the attribute
-        // otherwise remove all Persons that do have the attribute
         if (answer) {
-            // remove everybody that doesn't match
-            for (Person person : opponentPersons) {
-                // not sure of the speed of this \/
-                if (!matchingPersons.contains(person))
-                    personsToRemove.add(person);
-            }
+        	// Remove all persons that don't have attribute-value
+        	opponentPersons.retainAll(matchingPersons);
         }
-        else
-            // remove everybody that does match
-            personsToRemove = matchingPersons;
-
-        for (Person person : personsToRemove)
-            opponentPersons.remove(person);
-
-        // remove the attr from the pool of guessable ones since
-        // it has been used
-        // attrValToPersonsMap.remove(key);
+        else {
+        	// Remove all persons that have attribute-value
+        	opponentPersons.removeAll(matchingPersons);
+        }
 
         return false;
     }

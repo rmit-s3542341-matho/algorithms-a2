@@ -62,25 +62,8 @@ public class CustomGuessPlayer extends Game
         	}
         }
 
-        /*
-         * Idea:
-         *
-         * At some point, the closest is something like 1/2 or 1/3
-         * This means that it will ask for an attribute that can match only one, or two Persons
-         * Best case scenario here: The guess is correct, meaning one Person is left, and then we
-         * guess for that Person next round.
-         *
-         * I think at this point it should just guess the Person. If it is wrong, it can still remove the Person
-         * i.e. 1/3 => 2, then try the same strategy next round (which should work).
-         *
-         * If it is right, it saves narrowing it down to one Person, effectively removing an entire round.
-         *
-         * To incorporate this we have to check for a Person guess in receiveAnswer
-         *
-         */
-
         if (opponentPersons.size() <= 3) {
-            // guess a Person now
+            // guess a Person now (this is the smart part)
             // best case: correct and finish (save 2 whole rounds)
             // worst case: (size == 3) only one Person is removed (same result as if guessing attr)
             // worse case: (size == 2) one Person is removed, guess Person next round (save 1 round)
@@ -112,6 +95,15 @@ public class CustomGuessPlayer extends Game
         if (currGuess.getType() == Guess.GuessType.Person) {
             if (answer) return true;
             else {
+                // we need to handle when the Person guessed wasn't
+                // correct (unlike other implementations where the guessed
+                // Person is always the only one left and therefore always
+                // correct). This implementation attempts to guess Persons
+                // before it is certain which is correct.
+
+                // go through the list of remaining Persons, and remove the
+                // person that we guessed - as well as removing them from
+                // all attributes they were present in
                 for (Person person : opponentPersons) {
                     if (person.name.equals(currGuess.getValue())) {
                         opponentPersons.remove(person);
@@ -119,7 +111,7 @@ public class CustomGuessPlayer extends Game
                         return false;
                     }
                 }
-                System.out.println("Player not found");
+                System.out.println("Person not found");
             }
         }
 

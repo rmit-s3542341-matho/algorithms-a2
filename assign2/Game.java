@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public abstract class Game {
-	public ArrayList<Person> allPersons = new ArrayList<Person>(); // This would be a set however Java sets do not have a .get method
-	public HashMap<String, ArrayList<String>> allAttributes = new HashMap<String, ArrayList<String>>(); 
+public abstract class Game  implements Player 
+{
+	protected ArrayList<Person> allPersons = new ArrayList<Person>(); // This would be a set however Java sets do not have a .get method
+	private HashMap<String, ArrayList<String>> allAttributes = new HashMap<String, ArrayList<String>>(); 
 	
-	// Methods
 	public Person getPerson(String name) {
 		for (Person person : allPersons) {
 			if (person.name.equals(name))
@@ -17,11 +17,11 @@ public abstract class Game {
 		return null;
 	}
 	
-	public void readGameConfig(String fileName, HashMap<String, ArrayList<Person>> attrMap)
+	public void readGameConfig(String fileName, HashMap<String, ArrayList<Person>> attrValToPersonsMap)
 			throws IOException
 	{
 		int lineNoStart = readAttributes(fileName);
-		readPersons(fileName, lineNoStart, attrMap);
+		readPersons(fileName, lineNoStart, attrValToPersonsMap);
 	}
 	
 	private int readAttributes(String fileName) throws IOException
@@ -55,7 +55,7 @@ public abstract class Game {
 		return lineNo;
 	}
 	
-	private void readPersons(String fileName, int lineNoStart, HashMap<String, ArrayList<Person>> attrMap)
+	private void readPersons(String fileName, int lineNoStart, HashMap<String, ArrayList<Person>> attrValToPersonsMap)
 			throws IOException
 	{
         BufferedReader assignedReader = new BufferedReader(new FileReader(fileName));
@@ -76,6 +76,7 @@ public abstract class Game {
         			continue;
         		}
         		
+        		// Read person
         		if (fields.length == 1) {
         			currentPerson = new Person(fields[0]); 
         			allPersons.add(currentPerson);
@@ -84,11 +85,10 @@ public abstract class Game {
         			// Read person's attribute and value
         			currentPerson.attributes.put(fields[0], fields[1]);
 
-					// add Person to their attribute map
-					// assumes line is in the form: "hairColor black"
-					if (!attrMap.containsKey(line))
-						attrMap.put(line, new ArrayList<Person>());
-					attrMap.get(line).add(currentPerson);
+					// Add person to attribute-value ~> persons map
+					if (!attrValToPersonsMap.containsKey(line))
+						attrValToPersonsMap.put(line, new ArrayList<Person>());
+					attrValToPersonsMap.get(line).add(currentPerson);
         		}
         	}
         }

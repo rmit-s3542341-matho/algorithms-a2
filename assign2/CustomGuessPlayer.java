@@ -117,17 +117,13 @@ public class CustomGuessPlayer extends Game
 
         String attrVal = currGuess.getAttribute() + " " + currGuess.getValue();
         ArrayList<Person> matchingPersons = attrValToPersonsMap.get(attrVal);
-        ArrayList<Person> personsToRemove = new ArrayList<Person>(opponentPersons);
 
-        if (answer) {
-        	// Set to remove all persons that don't have attribute-value
-        	personsToRemove.removeAll(matchingPersons);
-        }
-        else {
-        	// Set to remove all persons that have attribute-value
-            personsToRemove.retainAll(matchingPersons);
-        }
-        opponentPersons.removeAll(personsToRemove);
+        if (answer)
+            // if the guess was correct we only want to retain the matching Persons
+            opponentPersons.retainAll(matchingPersons);
+        else
+            // if the guess wasn't correct we need to remove all matching Persons
+            opponentPersons.removeAll(matchingPersons);
 
         // Remove the attribute from the pool of guessable ones
         attrValToPersonsMap.remove(attrVal);
@@ -135,7 +131,10 @@ public class CustomGuessPlayer extends Game
         // Remove required persons from attribute-value pairs (attrValToPersonsMap)
         for (String currAttrVal : attrValToPersonsMap.keySet()) {
             ArrayList<Person> persons = attrValToPersonsMap.get(currAttrVal);
-            persons.removeAll(personsToRemove);
+            if (answer)
+                persons.retainAll(matchingPersons);
+            else
+                persons.removeAll(matchingPersons);
         }
 
         return false;
